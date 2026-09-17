@@ -1,0 +1,218 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* ---------------------------------------------------------------
+   BhojanSetu dispatch console — token system.
+   Light is the default. [data-theme="dark"] on <html> flips it.
+   Signal colours are reserved for STATE only. Never decoration.
+   --------------------------------------------------------------- */
+
+:root {
+  --bg:          #edf0ec;
+  --surface:     #ffffff;
+  --surface-2:   #f5f7f4;
+  --surface-3:   #e3e8e1;
+  --line:        #d2dad0;
+  --line-strong: #b4bfb2;
+
+  --text:        #10160f;
+  --text-dim:    #47544a;
+  --text-faint:  #78857a;
+
+  --brand:       #e8a33d;
+  --brand-ink:   #8a5b12;
+
+  --critical:    #c5321c;
+  --critical-bg: #fbe5e0;
+  --high:        #b8700f;
+  --high-bg:     #fbf0dc;
+  --ok:          #167a49;
+  --ok-bg:       #e0f0e7;
+  --transit:     #2f5fa8;
+  --transit-bg:  #e2ebf8;
+  --idle:        #6d7a6f;
+  --idle-bg:     #e8ece7;
+
+  --shadow: 0 1px 0 rgba(16,22,15,.04), 0 1px 3px rgba(16,22,15,.06);
+  --radius: 3px;
+}
+
+[data-theme="dark"] {
+  --bg:          #0e1512;
+  --surface:     #151d19;
+  --surface-2:   #1b2521;
+  --surface-3:   #23302a;
+  --line:        #2a3831;
+  --line-strong: #3d4f45;
+
+  --text:        #e8efe9;
+  --text-dim:    #9fb0a4;
+  --text-faint:  #718376;
+
+  --brand:       #e8a33d;
+  --brand-ink:   #f0bb6e;
+
+  --critical:    #ff6a4d;
+  --critical-bg: #38180f;
+  --high:        #f0a83a;
+  --high-bg:     #33260d;
+  --ok:          #3fc684;
+  --ok-bg:       #0f2c1e;
+  --transit:     #74a6f0;
+  --transit-bg:  #121f33;
+  --idle:        #8a9a8d;
+  --idle-bg:     #1d2722;
+
+  --shadow: 0 1px 0 rgba(0,0,0,.3), 0 2px 6px rgba(0,0,0,.35);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Numbers that matter — countdowns, scores, quantities, IDs.
+   Tabular so digits don't jitter as a timer ticks. */
+.mono {
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.h-board {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+::selection { background: var(--brand); color: #10160f; }
+
+:focus-visible {
+  outline: 2px solid var(--transit);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@layer components {
+  /* --- surfaces ------------------------------------------------- */
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  /* A chit is a dispatch ticket: flat, squared, with a state stripe
+     down the leading edge. Deliberately not a soft SaaS card. */
+  .chit {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--stripe, var(--line-strong));
+    border-radius: var(--radius);
+  }
+
+  .rule { border-color: var(--line); }
+
+  /* --- controls -------------------------------------------------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+  }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .btn-primary { background: var(--text); color: var(--bg); }
+  .btn-primary:not(:disabled):hover { background: var(--text-dim); }
+
+  .btn-go { background: var(--ok); color: #fff; }
+  .btn-go:not(:disabled):hover { filter: brightness(1.08); }
+
+  .btn-urgent { background: var(--critical); color: #fff; }
+  .btn-urgent:not(:disabled):hover { filter: brightness(1.08); }
+
+  .btn-quiet {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--line-strong);
+  }
+  .btn-quiet:not(:disabled):hover { background: var(--surface-2); }
+
+  .field {
+    width: 100%;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .field:focus { border-color: var(--transit); }
+
+  /* --- motion ---------------------------------------------------- */
+
+  @keyframes beacon {
+    0%   { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+    70%  { box-shadow: 0 0 0 6px transparent; opacity: .75; }
+    100% { box-shadow: 0 0 0 0 transparent; opacity: 1; }
+  }
+  .beacon { animation: beacon 2s ease-out infinite; }
+
+  @keyframes shimmer {
+    from { background-position: -320px 0; }
+    to   { background-position: 320px 0; }
+  }
+  .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      var(--surface-2) 0%,
+      var(--surface-3) 50%,
+      var(--surface-2) 100%
+    );
+    background-size: 320px 100%;
+    animation: shimmer 1.4s linear infinite;
+    border-radius: 2px;
+  }
+
+  /* The one deliberately loud moment: a chit inside its final minutes
+     breathes, so it pulls the eye across a busy board. */
+  @keyframes expiring {
+    0%, 100% { border-left-color: var(--critical); }
+    50%      { border-left-color: var(--high); }
+  }
+  .chit-expiring { animation: expiring 1.6s ease-in-out infinite; }
+
+}
+
+/* Unlayered so it outranks everything, including utilities. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* --- scrollbars in the activity rail ---------------------------- */
+.thin-scroll { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.thin-scroll::-webkit-scrollbar { width: 6px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
